@@ -1,0 +1,18 @@
+[package]
+name = "ts-bin"
+description = "Print ISO 8601 or Unix timestamps on the command line"
+version = "1.0.0"
+authors = ["Brendan Molloy <brendan@bbqsrc.net>"]
+repository = "https://github.com/bbqsrc/ts"
+keywords = ["date", "time", "timestamp", "8601", "ts"]
+categories = ["command-line-utilities", "date-and-time"]
+edition = "2018"
+license = "EUPL-1.2+"
+
+[[bin]]
+name = "ts"
+path = "src/main.rs"
+
+[dependencies]
+chrono = "0.4.19"
+gumdrop = "0.8.0"
