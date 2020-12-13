@@ -1,3 +1,6 @@
+use std::io::Read;
+
+use atty::Stream;
 use chrono::prelude::*;
 use gumdrop::Options;
 
@@ -20,7 +23,7 @@ struct Args {
     hex_unix_epoch: bool,
 }
 
-fn run<T: TimeZone>(args: Args, now: DateTime<T>)
+fn run<T: TimeZone>(args: &Args, now: DateTime<T>)
 where
     T::Offset: std::fmt::Display,
 {
@@ -32,23 +35,42 @@ where
             eprintln!("warning: local flag ignored.");
         }
         if is_hex {
-            println!("{:x}", now.timestamp());
+            print!("{:x}", now.timestamp());
         } else {
-            println!("{}", now.timestamp());
+            print!("{}", now.timestamp());
         }
     } else if args.local {
-        println!("{}", now.to_rfc3339());
+        print!("{}", now.to_rfc3339());
     } else {
-        println!("{:?}", now);
+        print!("{:?}", now);
     }
 }
 
 fn main() {
     let args = Args::parse_args_default_or_exit();
 
-    if args.local {
-        run(args, Local::now());
+    if atty::is(Stream::Stdin) {
+        if args.local {
+            run(&args, Local::now());
+        } else {
+            run(&args, Utc::now());
+        }
+        println!();
     } else {
-        run(args, Utc::now());
+        let mut buf = String::new();
+        let stdin = std::io::stdin();
+        while let Ok(n) = stdin.read_line(&mut buf) {
+            if n == 0 {
+                break;
+            }
+
+            if args.local {
+                run(&args, Local::now());
+            } else {
+                run(&args, Utc::now());
+            }
+            print!(": {}", buf);
+            buf.clear();
+        }
     }
 }
